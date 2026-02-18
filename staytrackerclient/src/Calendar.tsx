@@ -116,8 +116,13 @@ export function Calendar() {
   type DragState = { start: string; end: string; mode: 'fill' | 'clear' };
   const [dragRange, setDragRange] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const touchJustEndedRef = useRef(false);
 
   const handleDragStart = (key: string) => {
+    if (touchJustEndedRef.current) {
+      touchJustEndedRef.current = false;
+      return;
+    }
     const mode = key in days ? 'clear' : 'fill';
     dragRef.current = { start: key, end: key, mode };
     setDragRange({ start: key, end: key, mode });
@@ -130,24 +135,56 @@ export function Calendar() {
     }
   };
 
+  const applyDrag = () => {
+    const current = dragRef.current;
+    dragRef.current = null;
+    setDragRange(null);
+    if (!current) return;
+    const keys = dateKeysBetween(current.start, current.end);
+    if (keys.length === 1) {
+      toggleDay(keys[0]);
+    } else if (current.mode === 'fill') {
+      setRangeToJapan(keys);
+    } else {
+      clearRange(keys);
+    }
+  };
+
   useEffect(() => {
     if (dragRange === null) return;
-    const onMouseUp = () => {
-      const current = dragRef.current;
-      dragRef.current = null;
-      setDragRange(null);
-      if (!current) return;
-      const keys = dateKeysBetween(current.start, current.end);
-      if (keys.length === 1) {
-        toggleDay(keys[0]);
-      } else if (current.mode === 'fill') {
-        setRangeToJapan(keys);
-      } else {
-        clearRange(keys);
+    const onMouseUp = () => applyDrag();
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragRef.current || !e.touches.length) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const dayCell = el?.closest?.('[data-date-key]');
+      const key = dayCell?.getAttribute?.('data-date-key');
+      if (key) handleDragEnter(key);
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!e.touches.length) {
+        e.preventDefault();
+        applyDrag();
+        touchJustEndedRef.current = true;
+        setTimeout(() => {
+          touchJustEndedRef.current = false;
+        }, 400);
       }
     };
+
     document.addEventListener('mouseup', onMouseUp);
-    return () => document.removeEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd, { passive: false });
+    document.addEventListener('touchcancel', onTouchEnd, { passive: false });
+    return () => {
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('touchcancel', onTouchEnd);
+    };
   }, [dragRange]);
 
   // Current month being viewed (first day of that month)
@@ -285,8 +322,10 @@ export function Calendar() {
                     key={key}
                     type="button"
                     className={`day-cell day ${inJapan ? 'japan' : ''} ${rangeClass}`}
+                    data-date-key={key}
                     onMouseDown={() => handleDragStart(key)}
                     onMouseEnter={() => handleDragEnter(key)}
+                    onTouchStart={() => handleDragStart(key)}
                     title={inJapan ? `${key} – in Japan` : `${key} – not in Japan`}
                     aria-label={`${d.toLocaleDateString()}${inJapan ? ', in Japan' : ', not in Japan'}`}
                     aria-pressed={inJapan}
