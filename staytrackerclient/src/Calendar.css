@@ -16,6 +16,33 @@
   letter-spacing: -0.02em;
 }
 
+.count-from-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.count-from-label {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.count-from-input {
+  font-size: 1rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+.count-from-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .counter {
   display: inline-flex;
   flex-wrap: wrap;
@@ -174,6 +201,25 @@
   background: rgba(219, 39, 119, 0.5);
 }
 
+.day-cell.day-cell--range {
+  background: rgba(219, 39, 119, 0.5);
+  outline: 2px solid rgba(219, 39, 119, 0.8);
+}
+
+.day-cell.day-cell--range:not(.japan) {
+  background: rgba(219, 39, 119, 0.25);
+}
+
+/* Drag to clear: show range that will be unselected */
+.day-cell.day-cell--range-clear {
+  outline: 2px dashed rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.day-cell.day-cell--range-clear.japan {
+  background: rgba(219, 39, 119, 0.2);
+}
+
 .day-num {
   line-height: 1;
 }
@@ -191,6 +237,15 @@
 }
 
 @media (prefers-color-scheme: light) {
+  .count-from-input {
+    border-color: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .count-from-input:focus {
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+
   .counter {
     background: rgba(0, 0, 0, 0.05);
   }
@@ -209,5 +264,23 @@
 
   .day-cell.japan:hover {
     background: rgba(219, 39, 119, 0.35);
+  }
+
+  .day-cell.day-cell--range {
+    background: rgba(219, 39, 119, 0.35);
+    outline-color: rgba(219, 39, 119, 0.7);
+  }
+
+  .day-cell.day-cell--range:not(.japan) {
+    background: rgba(219, 39, 119, 0.15);
+  }
+
+  .day-cell.day-cell--range-clear {
+    outline-color: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  .day-cell.day-cell--range-clear.japan {
+    background: rgba(219, 39, 119, 0.15);
   }
 }
